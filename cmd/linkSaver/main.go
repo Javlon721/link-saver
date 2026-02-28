@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Javlon721/link-saver/internal/config"
+	"github.com/Javlon721/link-saver/internal/handlers"
 	linksaver "github.com/Javlon721/link-saver/internal/linkSaver"
 	"github.com/joho/godotenv"
 )
@@ -23,6 +24,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	mainHandler := handlers.NewMainHandler()
+
+	app.RegisterHandler(mainHandler)
 
 	app.Start()
 }

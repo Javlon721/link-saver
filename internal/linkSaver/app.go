@@ -8,6 +8,10 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
+type Registable interface {
+	RegisterHandlers(*tele.Bot)
+}
+
 type App struct {
 	Bot    *tele.Bot
 	Config *config.Config
@@ -37,4 +41,8 @@ func (app App) Start() {
 	fmt.Printf("%s started to work\n", app.Config.BOT_NAME)
 
 	app.Bot.Start()
+}
+
+func (app App) RegisterHandler(h Registable) {
+	h.RegisterHandlers(app.Bot)
 }
