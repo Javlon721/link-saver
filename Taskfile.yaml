@@ -1,0 +1,24 @@
+version: '3'
+
+vars:
+  EXEC_FILE: './cmd/linkSaver'
+  OUTPUT: './bin/linkSaver/main'
+
+tasks:
+  build:
+    cmd: go build -o {{.OUTPUT}} {{.EXEC_FILE}}
+    silent: true
+
+  run:
+    deps:
+      - task: build
+    cmd: '{{.OUTPUT}}'
+    silent: true
+
+  db:
+    cmd: docker compose up db -d
+    silent: true
+
+  docker-stop:
+    aliases: [ds]
+    cmd: docker compose stop
