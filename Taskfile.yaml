@@ -22,3 +22,7 @@ tasks:
   docker-stop:
     aliases: [ds]
     cmd: docker compose stop
+
+  db-connect:
+    aliases: [dbc]
+    cmd: psql -U postgres -h localhost -p 5432

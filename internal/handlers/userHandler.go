@@ -1,0 +1,53 @@
+package handlers
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+
+	"github.com/Javlon721/link-saver/internal/errs"
+	"github.com/Javlon721/link-saver/internal/types"
+	tele "gopkg.in/telebot.v4"
+)
+
+type UserHandler struct {
+	userStore types.UserStore
+}
+
+func NewUserHandler(userStore types.UserStore) *UserHandler {
+	return &UserHandler{userStore: userStore}
+}
+
+func (h UserHandler) RegisterUser(ctx tele.Context) error {
+	senderID := ctx.Sender().ID
+
+	params := &types.RegisterUser{TelegramID: senderID}
+
+	_, err := h.userStore.Register(context.Background(), params)
+
+	slog.Error("userHandler.RegisterUser", "err", err)
+
+	if errors.Is(err, errs.ErrUserAlreadyExists) {
+		return ctx.Send(err.Error())
+	}
+
+	return nil
+}
+
+func (h UserHandler) GetUser(ctx tele.Context) error {
+	senderID := ctx.Sender().ID
+
+	user, err := h.userStore.GetUser(context.Background(), senderID)
+
+	if err != nil {
+		slog.Error("userHandler.GetUser", "err", err)
+	}
+
+	return ctx.Send(fmt.Sprintf("your id is: %d", user.TelegramID))
+}
+
+func (h UserHandler) RegisterHandlers(bot *tele.Bot) {
+	bot.Handle("/register", h.RegisterUser)
+	bot.Handle("/me", h.GetUser)
+}
