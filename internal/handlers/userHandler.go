@@ -41,7 +41,13 @@ func (h UserHandler) GetUser(ctx tele.Context) error {
 	user, err := h.userStore.GetUser(context.Background(), senderID)
 
 	if err != nil {
+		if errors.Is(err, errs.ErrUserNotFound) {
+			return ctx.Send("You need to register first")
+		}
+
 		slog.Error("userHandler.GetUser", "err", err)
+
+		return nil
 	}
 
 	return ctx.Send(fmt.Sprintf("your id is: %d", user.TelegramID))
@@ -58,7 +64,7 @@ func (h UserHandler) DeleteUser(ctx tele.Context) error {
 			return ctx.Send(err.Error())
 		}
 
-		slog.Info("UserHandler.DeleteUser", "err", err)
+		slog.Error("UserHandler.DeleteUser", "err", err)
 
 		return ctx.Send("some error occured")
 	}
