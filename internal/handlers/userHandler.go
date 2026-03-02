@@ -26,10 +26,14 @@ func (h UserHandler) RegisterUser(ctx tele.Context) error {
 
 	_, err := h.userStore.Register(context.Background(), params)
 
-	slog.Error("userHandler.RegisterUser", "err", err)
+	if err != nil {
+		if errors.Is(err, errs.ErrUserAlreadyExists) {
+			return ctx.Send(err.Error())
+		}
 
-	if errors.Is(err, errs.ErrUserAlreadyExists) {
-		return ctx.Send(err.Error())
+		slog.Error("userHandler.RegisterUser", "err", err)
+
+		return nil
 	}
 
 	return nil
