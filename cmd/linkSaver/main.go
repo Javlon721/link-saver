@@ -13,6 +13,7 @@ import (
 
 var (
 	userTable = "users"
+	linkTable = "links"
 )
 
 func main() {
@@ -44,6 +45,7 @@ func main() {
 	defer postgreConn.Close(context.Background())
 
 	userStore := db.NewPostgresUserStore(postgreConn, userTable)
+	linkStore := db.NewPostgreLinkStore(postgreConn, linkTable)
 
 	app, err := linksaver.New(config)
 
@@ -53,9 +55,11 @@ func main() {
 
 	mainHandler := handlers.NewMainHandler()
 	userHandler := handlers.NewUserHandler(userStore)
+	linkHandler := handlers.NewLinkHandler(linkStore, userStore)
 
 	app.RegisterHandler(mainHandler)
 	app.RegisterHandler(userHandler)
+	app.RegisterHandler(linkHandler)
 
 	app.Start()
 }

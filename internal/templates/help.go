@@ -14,6 +14,8 @@ func HelpDesk() types.Message {
 			"/register - registers new user\n",
 			"/me - send current user info\n",
 			"/help - prints help desk\n",
+			"\n",
+			"/link - register new link\n",
 			"/links - print all links that you send\n",
 			"\n",
 			"/stop - deletes all your data (<b>DANGER</b>)\n",
