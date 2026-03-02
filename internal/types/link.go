@@ -4,7 +4,7 @@ import "context"
 
 type LinkStore interface {
 	Register(context.Context, *RegisterLink) (*Link, error)
-	GetAll(context.Context) ([]*Link, error)
+	GetAll(context.Context, int64) []*Link
 }
 
 type RegisterLink struct {

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/Javlon721/link-saver/internal/errs"
+	"github.com/Javlon721/link-saver/internal/templates"
 	"github.com/Javlon721/link-saver/internal/types"
 	tele "gopkg.in/telebot.v4"
 )
@@ -67,6 +68,35 @@ func (h LinkHandler) RegisterLink(ctx tele.Context) error {
 	return ctx.Send(fmt.Sprintf("link registered: %d", link.ID))
 }
 
+func (h LinkHandler) GetAll(ctx tele.Context) error {
+	senderID := ctx.Sender().ID
+
+	contextBG := context.Background()
+
+	user, err := h.userStore.GetUser(contextBG, senderID)
+
+	if err != nil {
+		if errors.Is(err, errs.ErrUserNotFound) {
+			return ctx.Send("You need to register first")
+		}
+
+		slog.Error("LinkHandler.GetAll", "err", err)
+
+		return nil
+	}
+
+	links := h.linkStore.GetAll(contextBG, user.ID)
+
+	if len(links) == 0 {
+		return ctx.Send("you does not have any links")
+	}
+
+	message := templates.LinksTemplate(links)
+
+	return ctx.Send(message.Text, message.ParseMode)
+}
+
 func (h LinkHandler) RegisterHandlers(bot *tele.Bot) {
 	bot.Handle("/link", h.RegisterLink)
+	bot.Handle("/links", h.GetAll)
 }
