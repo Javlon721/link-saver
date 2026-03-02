@@ -14,4 +14,5 @@ type RegisterUser struct {
 type UserStore interface {
 	GetUser(context.Context, int64) (*User, error)
 	Register(context.Context, *RegisterUser) (*User, error)
+	DeleteUser(context.Context, int64) error
 }

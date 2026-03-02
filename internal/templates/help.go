@@ -15,6 +15,8 @@ func HelpDesk() types.Message {
 			"/me - send current user info\n",
 			"/help - prints help desk\n",
 			"/links - print all links that you send\n",
+			"\n",
+			"/stop - deletes all your data (<b>DANGER</b>)\n",
 		),
 		ParseMode: tele.ModeHTML,
 	}

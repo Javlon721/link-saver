@@ -60,6 +60,20 @@ func (p PostgreUserStore) Register(ctx context.Context, params *types.RegisterUs
 	return newUser, nil
 }
 
+func (p PostgreUserStore) DeleteUser(ctx context.Context, telegram_id int64) error {
+	user, err := p.GetUser(ctx, telegram_id)
+
+	if err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf("delete from %s where telegram_id = $1", p.table)
+
+	_, err = p.conn.Exec(ctx, query, user.TelegramID)
+
+	return err
+}
+
 func NewPostgresUserStore(conn *pgx.Conn, table string) *PostgreUserStore {
 	cleanedTable := pgx.Identifier{table}.Sanitize()
 

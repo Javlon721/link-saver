@@ -47,7 +47,27 @@ func (h UserHandler) GetUser(ctx tele.Context) error {
 	return ctx.Send(fmt.Sprintf("your id is: %d", user.TelegramID))
 }
 
+func (h UserHandler) DeleteUser(ctx tele.Context) error {
+	senderID := ctx.Sender().ID
+
+	err := h.userStore.DeleteUser(context.Background(), senderID)
+
+	if err != nil {
+
+		if errors.Is(err, errs.ErrUserAlreadyExists) {
+			return ctx.Send(err.Error())
+		}
+
+		slog.Info("UserHandler.DeleteUser", "err", err)
+
+		return ctx.Send("some error occured")
+	}
+
+	return ctx.Send("user deleted successfully")
+}
+
 func (h UserHandler) RegisterHandlers(bot *tele.Bot) {
 	bot.Handle("/register", h.RegisterUser)
 	bot.Handle("/me", h.GetUser)
+	bot.Handle("/stop", h.DeleteUser)
 }
