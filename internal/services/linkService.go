@@ -23,7 +23,7 @@ func (service LinkService) RegisterLink(ctx context.Context, params *types.Regis
 		return nil, err
 	}
 
-	link, err := service.linkStore.Register(ctx, user.ID, params.Link, params.Desctibtion)
+	link, err := service.linkStore.AddLink(ctx, user.ID, params.Link, params.Desctibtion)
 
 	if err != nil {
 		return nil, err

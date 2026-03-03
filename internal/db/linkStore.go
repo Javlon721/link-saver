@@ -13,7 +13,7 @@ type PostgreLinkStore struct {
 	table string
 }
 
-func (store PostgreLinkStore) Register(ctx context.Context, userID int64, linkName, describtion string) (*types.Link, error) {
+func (store PostgreLinkStore) AddLink(ctx context.Context, userID int64, linkName, describtion string) (*types.Link, error) {
 	query := fmt.Sprintf("insert into %s (user_id, link, describtion) values ($1, $2, $3) returning id", store.table)
 
 	var link types.Link
