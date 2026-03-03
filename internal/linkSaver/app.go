@@ -2,6 +2,9 @@ package linksaver
 
 import (
 	"fmt"
+	"log/slog"
+	"maps"
+	"strings"
 	"time"
 
 	"github.com/Javlon721/link-saver/internal/config"
@@ -13,12 +16,13 @@ type Registable interface {
 }
 
 type App struct {
-	Bot    *tele.Bot
-	Config *config.Config
+	Bot       *tele.Bot
+	Config    *config.Config
+	Callbacks map[string]tele.HandlerFunc
 }
 
 func New(config *config.Config) (*App, error) {
-	app := &App{Config: config}
+	app := &App{Config: config, Callbacks: map[string]tele.HandlerFunc{}}
 
 	pref := tele.Settings{
 		Token:  config.TELEGRAM_TOKEN,
@@ -37,10 +41,39 @@ func New(config *config.Config) (*App, error) {
 }
 
 func (app App) Start() {
+	app.ListenCallbacks()
 
 	fmt.Printf("%s started to work\n", app.Config.BOT_NAME)
 
 	app.Bot.Start()
+}
+
+func (app App) RegisterCallbacks(callbacks map[string]tele.HandlerFunc) {
+	maps.Copy(app.Callbacks, callbacks)
+}
+
+func (app App) ListenCallbacks() {
+	const startWith = "\f"
+
+	app.Bot.Handle(tele.OnCallback, func(c tele.Context) error {
+		payload := strings.TrimLeft(c.Callback().Data, startWith)
+
+		source := strings.SplitN(payload, "|", 2)
+
+		cb, ok := app.Callbacks[source[0]]
+
+		if !ok {
+			return nil
+		}
+
+		err := cb(c)
+
+		if err != nil {
+			slog.Error("tele.OnCallback", "err", err)
+		}
+
+		return nil
+	})
 }
 
 func (app App) RegisterHandler(h Registable) {

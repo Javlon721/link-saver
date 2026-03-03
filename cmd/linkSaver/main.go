@@ -61,5 +61,7 @@ func main() {
 	app.RegisterHandler(userHandler)
 	app.RegisterHandler(linkHandler)
 
+	app.RegisterCallbacks(linkHandler.GetCallbacks())
+
 	app.Start()
 }

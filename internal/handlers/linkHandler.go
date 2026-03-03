@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 
 	"github.com/Javlon721/link-saver/internal/errs"
@@ -16,6 +17,14 @@ import (
 type LinkHandler struct {
 	linkStore types.LinkStore
 	userStore types.UserStore
+}
+
+type Sendable interface {
+	Send(to tele.Recipient, what any, opts ...any) (*tele.Message, error)
+}
+
+type CallbackRegistrer interface {
+	HandlerCallback(string, tele.HandlerFunc)
 }
 
 func NewLinkHandler(linkStore types.LinkStore, userStore types.UserStore) *LinkHandler {
@@ -96,7 +105,83 @@ func (h LinkHandler) GetAll(ctx tele.Context) error {
 	return ctx.Send(message.Text, message.ParseMode)
 }
 
+func (h LinkHandler) GetAllWithBtns(ctx tele.Context) error {
+	sender := ctx.Sender()
+
+	contextBG := context.Background()
+
+	user, err := h.userStore.GetUser(contextBG, sender.ID)
+
+	if err != nil {
+		if errors.Is(err, errs.ErrUserNotFound) {
+			return ctx.Send("You need to register first")
+		}
+
+		slog.Error("LinkHandler.GetAll", "err", err)
+
+		return nil
+	}
+
+	links := h.linkStore.GetAll(contextBG, user.ID)
+
+	if len(links) == 0 {
+		return ctx.Send("you does not have any links")
+	}
+
+	for _, link := range links {
+		go func(sender tele.Recipient, bot Sendable, link *types.Link) {
+
+			menu := &tele.ReplyMarkup{}
+
+			message, btn := templates.LinkTemplateWithBtns(link, menu)
+
+			menu.Inline(menu.Row(*btn))
+
+			bot.Send(sender, message.Text, message.ParseMode, menu)
+
+		}(sender, ctx.Bot(), link)
+	}
+
+	return nil
+}
+
 func (h LinkHandler) RegisterHandlers(bot *tele.Bot) {
 	bot.Handle("/link", h.RegisterLink)
 	bot.Handle("/links", h.GetAll)
+	bot.Handle("/linksBtns", h.GetAllWithBtns)
+}
+
+func (h LinkHandler) DeleteLink(c tele.Context) error {
+	payload := strings.SplitN(c.Callback().Data, "|", 2)
+
+	if len(payload) < 2 {
+		slog.Error("LinkHandler.DeleteLink payload", "err", "need to privide link id for deletion", "payload", payload)
+		return nil
+	}
+
+	ctx := context.Background()
+
+	linkID, err := strconv.ParseInt(payload[1], 10, 64)
+
+	if err != nil {
+		slog.Error("LinkHandler.DeleteLink linkID", "err", err)
+		return nil
+	}
+
+	err = h.linkStore.DeleteLink(ctx, linkID)
+
+	if err != nil {
+		slog.Error("LinkHandler.DeleteLink linkID", "err", err)
+		return nil
+	}
+
+	return c.Delete()
+}
+
+func (h LinkHandler) GetCallbacks() map[string]tele.HandlerFunc {
+	callbacks := map[string]tele.HandlerFunc{}
+
+	callbacks["delete"] = h.DeleteLink
+
+	return callbacks
 }

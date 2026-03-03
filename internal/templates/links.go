@@ -8,6 +8,12 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
+type LinkBtnType string
+
+var (
+	DeleteLinkBtn LinkBtnType = "delete"
+)
+
 func LinkMessageTemplate(link *types.Link) types.Message {
 	return types.Message{
 		Text:      linkTemplate(link),
@@ -40,4 +46,11 @@ func LinksTemplate(links []*types.Link) types.Message {
 		Text:      buf.String(),
 		ParseMode: tele.ModeHTML,
 	}
+}
+
+func LinkTemplateWithBtns(link *types.Link, menu *tele.ReplyMarkup) (types.Message, *tele.Btn) {
+	message := LinkMessageTemplate(link)
+	btn := menu.Data("delete link", string(DeleteLinkBtn), fmt.Sprint(link.ID))
+
+	return message, &btn
 }

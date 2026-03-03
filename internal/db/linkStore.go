@@ -53,6 +53,15 @@ func (store PostgreLinkStore) GetAll(ctx context.Context, user_id int64) []*type
 	return result
 }
 
+func (store PostgreLinkStore) DeleteLink(ctx context.Context, link_id int64) error {
+
+	query := fmt.Sprintf("delete from %s where id = $1", store.table)
+
+	_, err := store.conn.Exec(ctx, query, link_id)
+
+	return err
+}
+
 func NewPostgreLinkStore(conn *pgx.Conn, table string) *PostgreLinkStore {
 	cleanedTable := pgx.Identifier{table}.Sanitize()
 
