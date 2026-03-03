@@ -16,8 +16,6 @@ import (
 )
 
 type LinkHandler struct {
-	linkStore   types.LinkStore
-	userStore   types.UserStore
 	linkService *services.LinkService
 }
 
@@ -29,8 +27,8 @@ type CallbackRegistrer interface {
 	HandlerCallback(string, tele.HandlerFunc)
 }
 
-func NewLinkHandler(linkStore types.LinkStore, userStore types.UserStore, linkService *services.LinkService) *LinkHandler {
-	return &LinkHandler{linkStore: linkStore, userStore: userStore, linkService: linkService}
+func NewLinkHandler(linkService *services.LinkService) *LinkHandler {
+	return &LinkHandler{linkService: linkService}
 }
 
 func (h LinkHandler) RegisterLink(c tele.Context) error {
