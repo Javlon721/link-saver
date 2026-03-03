@@ -58,7 +58,7 @@ func main() {
 	}
 
 	mainHandler := handlers.NewMainHandler()
-	userHandler := handlers.NewUserHandler(userStore, userService)
+	userHandler := handlers.NewUserHandler(userService)
 	linkHandler := handlers.NewLinkHandler(linkService)
 
 	app.RegisterHandler(mainHandler)

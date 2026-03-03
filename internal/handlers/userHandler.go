@@ -13,12 +13,11 @@ import (
 )
 
 type UserHandler struct {
-	userStore   types.UserStore
 	userService *services.UserService
 }
 
-func NewUserHandler(userStore types.UserStore, userService *services.UserService) *UserHandler {
-	return &UserHandler{userStore: userStore, userService: userService}
+func NewUserHandler(userService *services.UserService) *UserHandler {
+	return &UserHandler{userService: userService}
 }
 
 func (h UserHandler) RegisterUser(ctx tele.Context) error {
