@@ -8,6 +8,7 @@ import (
 	"github.com/Javlon721/link-saver/internal/db"
 	"github.com/Javlon721/link-saver/internal/handlers"
 	linksaver "github.com/Javlon721/link-saver/internal/linkSaver"
+	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/joho/godotenv"
 )
 
@@ -47,6 +48,8 @@ func main() {
 	userStore := db.NewPostgresUserStore(postgreConn, userTable)
 	linkStore := db.NewPostgreLinkStore(postgreConn, linkTable)
 
+	linkService := services.NewLinkService(linkStore, userStore)
+
 	app, err := linksaver.New(config)
 
 	if err != nil {
@@ -55,7 +58,7 @@ func main() {
 
 	mainHandler := handlers.NewMainHandler()
 	userHandler := handlers.NewUserHandler(userStore)
-	linkHandler := handlers.NewLinkHandler(linkStore, userStore)
+	linkHandler := handlers.NewLinkHandler(linkStore, userStore, linkService)
 
 	app.RegisterHandler(mainHandler)
 	app.RegisterHandler(userHandler)

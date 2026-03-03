@@ -13,20 +13,20 @@ type PostgreLinkStore struct {
 	table string
 }
 
-func (store PostgreLinkStore) Register(ctx context.Context, params *types.RegisterLink) (*types.Link, error) {
+func (store PostgreLinkStore) Register(ctx context.Context, userID int64, linkName, describtion string) (*types.Link, error) {
 	query := fmt.Sprintf("insert into %s (user_id, link, describtion) values ($1, $2, $3) returning id", store.table)
 
 	var link types.Link
 
-	err := store.conn.QueryRow(ctx, query, params.UserID, params.Link, params.Desctibtion).Scan(&link.ID)
+	err := store.conn.QueryRow(ctx, query, userID, linkName, describtion).Scan(&link.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	link.Link = params.Link
-	link.Desctibtion = params.Desctibtion
-	link.UserID = params.UserID
+	link.Link = linkName
+	link.Desctibtion = describtion
+	link.UserID = userID
 
 	return &link, err
 }

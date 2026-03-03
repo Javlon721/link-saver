@@ -9,14 +9,16 @@ import (
 	"strings"
 
 	"github.com/Javlon721/link-saver/internal/errs"
+	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/Javlon721/link-saver/internal/templates"
 	"github.com/Javlon721/link-saver/internal/types"
 	tele "gopkg.in/telebot.v4"
 )
 
 type LinkHandler struct {
-	linkStore types.LinkStore
-	userStore types.UserStore
+	linkStore   types.LinkStore
+	userStore   types.UserStore
+	linkService *services.LinkService
 }
 
 type Sendable interface {
@@ -27,20 +29,37 @@ type CallbackRegistrer interface {
 	HandlerCallback(string, tele.HandlerFunc)
 }
 
-func NewLinkHandler(linkStore types.LinkStore, userStore types.UserStore) *LinkHandler {
-	return &LinkHandler{linkStore: linkStore, userStore: userStore}
+func NewLinkHandler(linkStore types.LinkStore, userStore types.UserStore, linkService *services.LinkService) *LinkHandler {
+	return &LinkHandler{linkStore: linkStore, userStore: userStore, linkService: linkService}
 }
 
-func (h LinkHandler) RegisterLink(ctx tele.Context) error {
-	senderID := ctx.Sender().ID
+func (h LinkHandler) RegisterLink(c tele.Context) error {
+	senderID := c.Sender().ID
 
-	contextBG := context.Background()
+	ctx := context.Background()
 
-	user, err := h.userStore.GetUser(contextBG, senderID)
+	payload := strings.TrimSpace(c.Message().Payload)
+
+	if payload == "" {
+		return c.Send("you need to provide link")
+	}
+
+	args := strings.SplitN(payload, " ", 2)
+
+	params := &types.RegisterLink{
+		UserID: senderID,
+		Link:   args[0],
+	}
+
+	if len(args) == 2 {
+		params.Desctibtion = args[1]
+	}
+
+	link, err := h.linkService.RegisterLink(ctx, params)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {
-			return ctx.Send("You need to register first")
+			return c.Send("You need to register first")
 		}
 
 		slog.Error("LinkHandler.RegisterLink", "err", err)
@@ -48,33 +67,7 @@ func (h LinkHandler) RegisterLink(ctx tele.Context) error {
 		return nil
 	}
 
-	payload := strings.TrimSpace(ctx.Message().Payload)
-
-	if payload == "" {
-		return ctx.Send("you need to provide link")
-	}
-
-	args := strings.SplitN(payload, " ", 2)
-
-	params := &types.RegisterLink{
-		UserID: user.ID,
-	}
-
-	params.Link = args[0]
-
-	if len(args) == 2 {
-		params.Desctibtion = args[1]
-	}
-
-	link, err := h.linkStore.Register(contextBG, params)
-
-	if err != nil {
-		slog.Error("LinkHandler.RegisterLink", "err", err)
-
-		return nil
-	}
-
-	return ctx.Send(fmt.Sprintf("link registered: %d", link.ID))
+	return c.Send(fmt.Sprintf("link registered: %d", link.ID))
 }
 
 func (h LinkHandler) GetAll(ctx tele.Context) error {
