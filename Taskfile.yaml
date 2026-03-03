@@ -17,7 +17,6 @@ tasks:
 
   db:
     cmd: docker compose up db -d
-    silent: true
 
   docker-stop:
     aliases: [ds]
