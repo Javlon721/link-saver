@@ -49,6 +49,7 @@ func main() {
 	linkStore := db.NewPostgreLinkStore(postgreConn, linkTable)
 
 	linkService := services.NewLinkService(linkStore, userStore)
+	userService := services.NewUserService(userStore)
 
 	app, err := linksaver.New(config)
 
@@ -57,7 +58,7 @@ func main() {
 	}
 
 	mainHandler := handlers.NewMainHandler()
-	userHandler := handlers.NewUserHandler(userStore)
+	userHandler := handlers.NewUserHandler(userStore, userService)
 	linkHandler := handlers.NewLinkHandler(linkService)
 
 	app.RegisterHandler(mainHandler)

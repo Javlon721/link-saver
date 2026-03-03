@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/Javlon721/link-saver/internal/errs"
 	"github.com/Javlon721/link-saver/internal/types"
@@ -22,9 +21,6 @@ func (p PostgreUserStore) GetUser(ctx context.Context, telegramID int64) (*types
 	query := fmt.Sprintf("select id, telegram_id from %s where telegram_id = $1", p.table)
 
 	if err := p.conn.QueryRow(ctx, query, telegramID).Scan(&user.ID, &user.TelegramID); err != nil {
-
-		slog.Error(err.Error())
-
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errs.ErrUserNotFound
 		}
@@ -34,27 +30,15 @@ func (p PostgreUserStore) GetUser(ctx context.Context, telegramID int64) (*types
 	return &user, nil
 }
 
-func (p PostgreUserStore) Register(ctx context.Context, params *types.RegisterUser) (*types.User, error) {
-	_, err := p.GetUser(ctx, params.TelegramID)
-
-	if err == nil {
-		return nil, errs.ErrUserAlreadyExists
-	}
-
-	if !errors.Is(err, errs.ErrUserNotFound) {
-		return nil, err
-	}
-
+func (p PostgreUserStore) AddUser(ctx context.Context, params *types.RegisterUser) (*types.User, error) {
 	query := fmt.Sprintf("insert into %s (telegram_id) values ($1) returning id", p.table)
 
 	newUser := &types.User{
 		TelegramID: params.TelegramID,
 	}
 
-	if err = p.conn.QueryRow(ctx, query, params.TelegramID).Scan(&newUser.ID); err != nil {
-		slog.Error(err.Error())
-
-		return nil, fmt.Errorf("some error occured while creating user")
+	if err := p.conn.QueryRow(ctx, query, params.TelegramID).Scan(&newUser.ID); err != nil {
+		return nil, err
 	}
 
 	return newUser, nil

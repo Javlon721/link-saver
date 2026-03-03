@@ -7,16 +7,18 @@ import (
 	"log/slog"
 
 	"github.com/Javlon721/link-saver/internal/errs"
+	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/Javlon721/link-saver/internal/types"
 	tele "gopkg.in/telebot.v4"
 )
 
 type UserHandler struct {
-	userStore types.UserStore
+	userStore   types.UserStore
+	userService *services.UserService
 }
 
-func NewUserHandler(userStore types.UserStore) *UserHandler {
-	return &UserHandler{userStore: userStore}
+func NewUserHandler(userStore types.UserStore, userService *services.UserService) *UserHandler {
+	return &UserHandler{userStore: userStore, userService: userService}
 }
 
 func (h UserHandler) RegisterUser(ctx tele.Context) error {
@@ -24,7 +26,7 @@ func (h UserHandler) RegisterUser(ctx tele.Context) error {
 
 	params := &types.RegisterUser{TelegramID: senderID}
 
-	_, err := h.userStore.Register(context.Background(), params)
+	_, err := h.userService.RegisterUser(context.Background(), params)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserAlreadyExists) {
