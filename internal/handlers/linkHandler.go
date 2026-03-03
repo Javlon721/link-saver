@@ -96,27 +96,25 @@ func (h LinkHandler) GetAll(c tele.Context) error {
 	return c.Send(message.Text, message.ParseMode)
 }
 
-func (h LinkHandler) GetAllWithBtns(ctx tele.Context) error {
-	sender := ctx.Sender()
+func (h LinkHandler) GetAllWithBtns(c tele.Context) error {
+	sender := c.Sender()
 
-	contextBG := context.Background()
+	ctx := context.Background()
 
-	user, err := h.userStore.GetUser(contextBG, sender.ID)
+	links, err := h.linkService.GetAll(ctx, sender.ID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {
-			return ctx.Send("You need to register first")
+			return c.Send("You need to register first")
+		}
+
+		if errors.Is(err, errs.ErrLinksNotFound) {
+			return c.Send("You out of links")
 		}
 
 		slog.Error("LinkHandler.GetAll", "err", err)
 
 		return nil
-	}
-
-	links := h.linkStore.GetAll(contextBG, user.ID)
-
-	if len(links) == 0 {
-		return ctx.Send("you does not have any links")
 	}
 
 	for _, link := range links {
@@ -130,7 +128,7 @@ func (h LinkHandler) GetAllWithBtns(ctx tele.Context) error {
 
 			bot.Send(sender, message.Text, message.ParseMode, menu)
 
-		}(sender, ctx.Bot(), link)
+		}(sender, c.Bot(), link)
 	}
 
 	return nil
