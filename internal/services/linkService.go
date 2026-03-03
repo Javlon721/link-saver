@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/Javlon721/link-saver/internal/errs"
 	"github.com/Javlon721/link-saver/internal/types"
 )
 
@@ -29,4 +30,20 @@ func (service LinkService) RegisterLink(ctx context.Context, params *types.Regis
 	}
 
 	return link, nil
+}
+
+func (service LinkService) GetAll(ctx context.Context, userID int64) ([]*types.Link, error) {
+	user, err := service.userStore.GetUser(ctx, userID)
+
+	if err != nil {
+		return []*types.Link{}, err
+	}
+
+	links := service.linkStore.GetAll(ctx, user.ID)
+
+	if len(links) == 0 {
+		return []*types.Link{}, errs.ErrLinksNotFound
+	}
+
+	return links, nil
 }

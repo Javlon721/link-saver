@@ -70,16 +70,20 @@ func (h LinkHandler) RegisterLink(c tele.Context) error {
 	return c.Send(fmt.Sprintf("link registered: %d", link.ID))
 }
 
-func (h LinkHandler) GetAll(ctx tele.Context) error {
-	senderID := ctx.Sender().ID
+func (h LinkHandler) GetAll(c tele.Context) error {
+	senderID := c.Sender().ID
 
-	contextBG := context.Background()
+	ctx := context.Background()
 
-	user, err := h.userStore.GetUser(contextBG, senderID)
+	links, err := h.linkService.GetAll(ctx, senderID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {
-			return ctx.Send("You need to register first")
+			return c.Send("You need to register first")
+		}
+
+		if errors.Is(err, errs.ErrLinksNotFound) {
+			return c.Send("You out of links")
 		}
 
 		slog.Error("LinkHandler.GetAll", "err", err)
@@ -87,15 +91,9 @@ func (h LinkHandler) GetAll(ctx tele.Context) error {
 		return nil
 	}
 
-	links := h.linkStore.GetAll(contextBG, user.ID)
-
-	if len(links) == 0 {
-		return ctx.Send("you does not have any links")
-	}
-
 	message := templates.LinksTemplate(links)
 
-	return ctx.Send(message.Text, message.ParseMode)
+	return c.Send(message.Text, message.ParseMode)
 }
 
 func (h LinkHandler) GetAllWithBtns(ctx tele.Context) error {
