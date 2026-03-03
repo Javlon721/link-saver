@@ -16,8 +16,8 @@ func NewLinkService(linkStore types.LinkStore, userStore types.UserStore) *LinkS
 	return &LinkService{linkStore: linkStore, userStore: userStore}
 }
 
-func (service LinkService) RegisterLink(ctx context.Context, params *types.RegisterLink) (*types.Link, error) {
-	user, err := service.userStore.GetUser(ctx, params.UserID)
+func (service LinkService) RegisterLink(ctx context.Context, telegramID int64, params *types.LinkInfo) (*types.Link, error) {
+	user, err := service.userStore.GetUser(ctx, telegramID)
 
 	if err != nil {
 		return nil, err
@@ -32,8 +32,8 @@ func (service LinkService) RegisterLink(ctx context.Context, params *types.Regis
 	return link, nil
 }
 
-func (service LinkService) GetAll(ctx context.Context, userID int64) ([]*types.Link, error) {
-	user, err := service.userStore.GetUser(ctx, userID)
+func (service LinkService) GetAll(ctx context.Context, telegramID int64) ([]*types.Link, error) {
+	user, err := service.userStore.GetUser(ctx, telegramID)
 
 	if err != nil {
 		return []*types.Link{}, err
@@ -48,8 +48,8 @@ func (service LinkService) GetAll(ctx context.Context, userID int64) ([]*types.L
 	return links, nil
 }
 
-func (service LinkService) DeleteLink(ctx context.Context, userID, linkID int64) error {
-	user, err := service.userStore.GetUser(ctx, userID)
+func (service LinkService) DeleteLink(ctx context.Context, telegramID, linkID int64) error {
+	user, err := service.userStore.GetUser(ctx, telegramID)
 
 	if err != nil {
 		return err

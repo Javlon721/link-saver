@@ -8,8 +8,7 @@ type LinkStore interface {
 	DeleteLink(context.Context, int64, int64) error
 }
 
-type RegisterLink struct {
-	UserID      int64
+type LinkInfo struct {
 	Link        string
 	Desctibtion string
 }

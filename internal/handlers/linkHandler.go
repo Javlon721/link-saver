@@ -44,16 +44,15 @@ func (h LinkHandler) RegisterLink(c tele.Context) error {
 
 	args := strings.SplitN(payload, " ", 2)
 
-	params := &types.RegisterLink{
-		UserID: senderID,
-		Link:   args[0],
+	linkInfo := &types.LinkInfo{
+		Link: args[0],
 	}
 
 	if len(args) == 2 {
-		params.Desctibtion = args[1]
+		linkInfo.Desctibtion = args[1]
 	}
 
-	link, err := h.linkService.RegisterLink(ctx, params)
+	link, err := h.linkService.RegisterLink(ctx, senderID, linkInfo)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {
