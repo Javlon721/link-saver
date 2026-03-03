@@ -53,11 +53,11 @@ func (store PostgreLinkStore) GetAll(ctx context.Context, user_id int64) []*type
 	return result
 }
 
-func (store PostgreLinkStore) DeleteLink(ctx context.Context, link_id int64) error {
+func (store PostgreLinkStore) DeleteLink(ctx context.Context, userID, link_id int64) error {
 
-	query := fmt.Sprintf("delete from %s where id = $1", store.table)
+	query := fmt.Sprintf("delete from %s where id = $1 and user_id = $2", store.table)
 
-	_, err := store.conn.Exec(ctx, query, link_id)
+	_, err := store.conn.Exec(ctx, query, link_id, userID)
 
 	return err
 }

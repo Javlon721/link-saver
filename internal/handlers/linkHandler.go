@@ -144,7 +144,7 @@ func (h LinkHandler) DeleteLink(c tele.Context) error {
 	payload := strings.SplitN(c.Callback().Data, "|", 2)
 
 	if len(payload) < 2 {
-		slog.Error("LinkHandler.DeleteLink payload", "err", "need to privide link id for deletion", "payload", payload)
+		slog.Error("LinkHandler.DeleteLink", "err", "need to privide link id for deletion", "payload", payload)
 		return nil
 	}
 
@@ -153,14 +153,19 @@ func (h LinkHandler) DeleteLink(c tele.Context) error {
 	linkID, err := strconv.ParseInt(payload[1], 10, 64)
 
 	if err != nil {
-		slog.Error("LinkHandler.DeleteLink linkID", "err", err)
+		slog.Error("LinkHandler.DeleteLink", "err", err)
 		return nil
 	}
 
-	err = h.linkStore.DeleteLink(ctx, linkID)
+	err = h.linkService.DeleteLink(ctx, c.Sender().ID, linkID)
 
 	if err != nil {
-		slog.Error("LinkHandler.DeleteLink linkID", "err", err)
+		if errors.Is(err, errs.ErrUserNotFound) {
+			return c.Send("You need to register first")
+		}
+
+		slog.Error("LinkHandler.DeleteLink", "err", err)
+
 		return nil
 	}
 

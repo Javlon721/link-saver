@@ -47,3 +47,13 @@ func (service LinkService) GetAll(ctx context.Context, userID int64) ([]*types.L
 
 	return links, nil
 }
+
+func (service LinkService) DeleteLink(ctx context.Context, userID, linkID int64) error {
+	user, err := service.userStore.GetUser(ctx, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return service.linkStore.DeleteLink(ctx, user.ID, linkID)
+}
