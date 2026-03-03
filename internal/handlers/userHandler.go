@@ -44,7 +44,7 @@ func (h UserHandler) RegisterUser(ctx tele.Context) error {
 func (h UserHandler) GetUser(ctx tele.Context) error {
 	senderID := ctx.Sender().ID
 
-	user, err := h.userStore.GetUser(context.Background(), senderID)
+	user, err := h.userService.GetUser(context.Background(), senderID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {

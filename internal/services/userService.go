@@ -35,3 +35,7 @@ func (service UserService) RegisterUser(ctx context.Context, params *types.Regis
 
 	return user, nil
 }
+
+func (service UserService) GetUser(ctx context.Context, userID int64) (*types.User, error) {
+	return service.userStore.GetUser(ctx, userID)
+}
