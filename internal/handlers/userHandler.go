@@ -62,7 +62,7 @@ func (h UserHandler) GetUser(ctx tele.Context) error {
 func (h UserHandler) DeleteUser(ctx tele.Context) error {
 	senderID := ctx.Sender().ID
 
-	err := h.userStore.DeleteUser(context.Background(), senderID)
+	err := h.userService.DeleteUser(context.Background(), senderID)
 
 	if err != nil {
 

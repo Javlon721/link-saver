@@ -39,3 +39,7 @@ func (service UserService) RegisterUser(ctx context.Context, params *types.Regis
 func (service UserService) GetUser(ctx context.Context, userID int64) (*types.User, error) {
 	return service.userStore.GetUser(ctx, userID)
 }
+
+func (service UserService) DeleteUser(ctx context.Context, userID int64) error {
+	return service.userStore.DeleteUser(ctx, userID)
+}
