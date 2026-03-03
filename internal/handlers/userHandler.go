@@ -64,8 +64,7 @@ func (h UserHandler) DeleteUser(ctx tele.Context) error {
 	err := h.userService.DeleteUser(context.Background(), senderID)
 
 	if err != nil {
-
-		if errors.Is(err, errs.ErrUserAlreadyExists) {
+		if errors.Is(err, errs.ErrUserNotFound) {
 			return ctx.Send(err.Error())
 		}
 

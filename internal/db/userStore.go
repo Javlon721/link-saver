@@ -44,16 +44,10 @@ func (p PostgreUserStore) AddUser(ctx context.Context, params *types.RegisterUse
 	return newUser, nil
 }
 
-func (p PostgreUserStore) DeleteUser(ctx context.Context, telegram_id int64) error {
-	user, err := p.GetUser(ctx, telegram_id)
+func (p PostgreUserStore) DeleteUser(ctx context.Context, userID int64) error {
+	query := fmt.Sprintf("delete from %s where id = $1", p.table)
 
-	if err != nil {
-		return err
-	}
-
-	query := fmt.Sprintf("delete from %s where telegram_id = $1", p.table)
-
-	_, err = p.conn.Exec(ctx, query, user.TelegramID)
+	_, err := p.conn.Exec(ctx, query, userID)
 
 	return err
 }

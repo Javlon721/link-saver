@@ -41,5 +41,11 @@ func (service UserService) GetUser(ctx context.Context, userID int64) (*types.Us
 }
 
 func (service UserService) DeleteUser(ctx context.Context, userID int64) error {
-	return service.userStore.DeleteUser(ctx, userID)
+	user, err := service.userStore.GetUser(ctx, userID)
+
+	if err != nil {
+		return err
+	}
+
+	return service.userStore.DeleteUser(ctx, user.ID)
 }
