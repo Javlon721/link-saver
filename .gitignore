@@ -37,8 +37,3 @@ go.work.sum
 # OS generated files
 .DS_Store
 /**/.DS_Store
-
-# Temporary files
-tmp/
-temp/
-.tmp/
