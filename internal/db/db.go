@@ -6,6 +6,7 @@ import (
 
 	"github.com/Javlon721/link-saver/internal/config"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func NewPostgreConn(config *config.Config) (*pgx.Conn, error) {
@@ -14,4 +15,10 @@ func NewPostgreConn(config *config.Config) (*pgx.Conn, error) {
 	conn, err := pgx.Connect(context.Background(), connString)
 
 	return conn, err
+}
+
+type DB interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+	Query(context.Context, string, ...any) (pgx.Rows, error)
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 }

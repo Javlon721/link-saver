@@ -11,7 +11,7 @@ import (
 )
 
 type PostgreUserStore struct {
-	conn  *pgx.Conn
+	db    DB
 	table string
 }
 
@@ -20,7 +20,7 @@ func (p PostgreUserStore) GetUser(ctx context.Context, telegramID int64) (*types
 
 	query := fmt.Sprintf("select id, telegram_id from %s where telegram_id = $1", p.table)
 
-	if err := p.conn.QueryRow(ctx, query, telegramID).Scan(&user.ID, &user.TelegramID); err != nil {
+	if err := p.db.QueryRow(ctx, query, telegramID).Scan(&user.ID, &user.TelegramID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errs.ErrUserNotFound
 		}
@@ -37,7 +37,7 @@ func (p PostgreUserStore) AddUser(ctx context.Context, params *types.RegisterUse
 		TelegramID: params.TelegramID,
 	}
 
-	if err := p.conn.QueryRow(ctx, query, params.TelegramID).Scan(&newUser.ID); err != nil {
+	if err := p.db.QueryRow(ctx, query, params.TelegramID).Scan(&newUser.ID); err != nil {
 		return nil, err
 	}
 
@@ -47,16 +47,16 @@ func (p PostgreUserStore) AddUser(ctx context.Context, params *types.RegisterUse
 func (p PostgreUserStore) DeleteUser(ctx context.Context, userID int64) error {
 	query := fmt.Sprintf("delete from %s where id = $1", p.table)
 
-	_, err := p.conn.Exec(ctx, query, userID)
+	_, err := p.db.Exec(ctx, query, userID)
 
 	return err
 }
 
-func NewPostgresUserStore(conn *pgx.Conn, table string) *PostgreUserStore {
+func NewPostgresUserStore(db DB, table string) *PostgreUserStore {
 	cleanedTable := pgx.Identifier{table}.Sanitize()
 
 	return &PostgreUserStore{
-		conn:  conn,
+		db:    db,
 		table: cleanedTable,
 	}
 }

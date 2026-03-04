@@ -9,7 +9,7 @@ import (
 )
 
 type PostgreLinkStore struct {
-	conn  *pgx.Conn
+	db    DB
 	table string
 }
 
@@ -18,7 +18,7 @@ func (store PostgreLinkStore) AddLink(ctx context.Context, userID int64, linkNam
 
 	var link types.Link
 
-	err := store.conn.QueryRow(ctx, query, userID, linkName, describtion).Scan(&link.ID)
+	err := store.db.QueryRow(ctx, query, userID, linkName, describtion).Scan(&link.ID)
 
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (store PostgreLinkStore) GetAll(ctx context.Context, user_id int64) []*type
 	query := fmt.Sprintf("select id, user_id, link, describtion from %s where user_id = $1", store.table)
 
 	var result []*types.Link
-	rows, err := store.conn.Query(ctx, query, user_id)
+	rows, err := store.db.Query(ctx, query, user_id)
 
 	if err != nil {
 		return result
@@ -57,16 +57,16 @@ func (store PostgreLinkStore) DeleteLink(ctx context.Context, userID, link_id in
 
 	query := fmt.Sprintf("delete from %s where id = $1 and user_id = $2", store.table)
 
-	_, err := store.conn.Exec(ctx, query, link_id, userID)
+	_, err := store.db.Exec(ctx, query, link_id, userID)
 
 	return err
 }
 
-func NewPostgreLinkStore(conn *pgx.Conn, table string) *PostgreLinkStore {
+func NewPostgreLinkStore(db DB, table string) *PostgreLinkStore {
 	cleanedTable := pgx.Identifier{table}.Sanitize()
 
 	return &PostgreLinkStore{
-		conn:  conn,
+		db:    db,
 		table: cleanedTable,
 	}
 }
