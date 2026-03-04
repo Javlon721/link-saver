@@ -59,11 +59,12 @@ func main() {
 	}
 
 	mainHandler := handlers.NewMainHandler()
-	userHandler := handlers.NewUserHandler(userService, linkService, postgreConn)
+	userHandler := handlers.NewUserHandler(userService, linkService)
 	linkHandler := handlers.NewLinkHandler(linkService)
 
 	//middlewares
 	authMiddleware := middleware.AuthorizeUser(userService)
+	transactionMiddleware := middleware.BeginCommitRollback(postgreConn)
 
 	// global use endpoints
 	app.Bot.Handle("/start", mainHandler.HelpDeskHandler)
@@ -74,7 +75,7 @@ func main() {
 
 	// user crud
 	app.Bot.Handle("/me", userHandler.GetUser, authMiddleware)
-	app.Bot.Handle("/stop", userHandler.DeleteUser, authMiddleware)
+	app.Bot.Handle("/stop", userHandler.DeleteUser, authMiddleware, transactionMiddleware)
 
 	// link crud
 	app.Bot.Handle("/link", linkHandler.RegisterLink, authMiddleware)

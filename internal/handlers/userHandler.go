@@ -10,7 +10,6 @@ import (
 	"github.com/Javlon721/link-saver/internal/middleware"
 	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/Javlon721/link-saver/internal/types"
-	"github.com/jackc/pgx/v5"
 	tele "gopkg.in/telebot.v4"
 )
 
@@ -22,11 +21,10 @@ type Mux interface {
 type UserHandler struct {
 	userService *services.UserService
 	linkService *services.LinkService
-	conn        *pgx.Conn
 }
 
-func NewUserHandler(userService *services.UserService, linkService *services.LinkService, conn *pgx.Conn) *UserHandler {
-	return &UserHandler{userService: userService, linkService: linkService, conn: conn}
+func NewUserHandler(userService *services.UserService, linkService *services.LinkService) *UserHandler {
+	return &UserHandler{userService: userService, linkService: linkService}
 }
 
 func (h UserHandler) RegisterUser(ctx tele.Context) error {
@@ -70,17 +68,19 @@ func (h UserHandler) GetUser(ctx tele.Context) error {
 func (h UserHandler) DeleteUser(c tele.Context) error {
 	senderID := middleware.GetUserID(c)
 
-	ctx := context.Background()
-
-	tx, err := h.conn.Begin(ctx)
-
+	ctx, err := middleware.GetContext(c)
 	if err != nil {
-		slog.Error("UserHandler.DeleteUser creating tx", "err", err)
+		slog.Error("UserHandler.DeleteUser getting ctx", "err", err)
 
 		return c.Send("some error occured")
 	}
 
-	defer tx.Rollback(ctx)
+	tx, err := middleware.GetTran(c)
+	if err != nil {
+		slog.Error("UserHandler.DeleteUser getting tx", "err", err)
+
+		return c.Send("some error occured")
+	}
 
 	userService := h.userService.NewWithTx(tx)
 	linkService := h.linkService.NewWithTx(tx)
@@ -104,8 +104,6 @@ func (h UserHandler) DeleteUser(c tele.Context) error {
 
 		return c.Send("some error occured")
 	}
-
-	_ = tx.Commit(ctx)
 
 	return c.Send("user deleted successfully")
 }
