@@ -132,10 +132,10 @@ func (h LinkHandler) GetAllWithBtns(c tele.Context) error {
 	return nil
 }
 
-func (h LinkHandler) RegisterHandlers(bot *tele.Bot) {
-	bot.Handle("/link", h.RegisterLink)
-	bot.Handle("/links", h.GetAll)
-	bot.Handle("/linksBtns", h.GetAllWithBtns)
+func (h LinkHandler) RegisterHandlers(mux Mux) {
+	mux.Handle("/link", h.RegisterLink)
+	mux.Handle("/links", h.GetAll)
+	mux.Handle("/linksBtns", h.GetAllWithBtns)
 }
 
 func (h LinkHandler) DeleteLink(c tele.Context) error {

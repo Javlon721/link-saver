@@ -13,9 +13,9 @@ func (h MainHandler) HelpDeskHandler(ctx tele.Context) error {
 	return ctx.Send(message.Text, message.ParseMode)
 }
 
-func (h MainHandler) RegisterHandlers(bot *tele.Bot) {
-	bot.Handle("/start", h.HelpDeskHandler)
-	bot.Handle("/help", h.HelpDeskHandler)
+func (h MainHandler) RegisterHandlers(mux Mux) {
+	mux.Handle("/start", h.HelpDeskHandler)
+	mux.Handle("/help", h.HelpDeskHandler)
 }
 
 func NewMainHandler() *MainHandler {

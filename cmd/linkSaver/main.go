@@ -54,8 +54,6 @@ func main() {
 
 	app, err := linksaver.New(config)
 
-	app.Bot.Use(middleware.AuthorizeUser(userService))
-
 	if err != nil {
 		panic(err)
 	}
@@ -64,11 +62,21 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService, linkService, postgreConn)
 	linkHandler := handlers.NewLinkHandler(linkService)
 
-	app.RegisterHandler(mainHandler)
-	app.RegisterHandler(userHandler)
-	app.RegisterHandler(linkHandler)
+	withAuthMiddleWare := app.Bot.Group()
+	withoutAuth := app.Bot.Group()
+
+	authMiddleware := middleware.AuthorizeUser(userService)
+
+	withAuthMiddleWare.Use(authMiddleware)
+
+	withoutAuth.Handle("/register", userHandler.RegisterUser)
+
+	mainHandler.RegisterHandlers(withoutAuth)
+	userHandler.RegisterHandlers(withAuthMiddleWare)
+	linkHandler.RegisterHandlers(withAuthMiddleWare)
 
 	app.RegisterCallbacks(linkHandler.GetCallbacks())
+	app.ListenCallbacks(authMiddleware)
 
 	app.Start()
 }

@@ -11,10 +11,6 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-type Registable interface {
-	RegisterHandlers(*tele.Bot)
-}
-
 type App struct {
 	Bot       *tele.Bot
 	Config    *config.Config
@@ -41,8 +37,6 @@ func New(config *config.Config) (*App, error) {
 }
 
 func (app App) Start() {
-	app.ListenCallbacks()
-
 	fmt.Printf("%s started to work\n", app.Config.BOT_NAME)
 
 	app.Bot.Start()
@@ -52,7 +46,7 @@ func (app App) RegisterCallbacks(callbacks map[string]tele.HandlerFunc) {
 	maps.Copy(app.Callbacks, callbacks)
 }
 
-func (app App) ListenCallbacks() {
+func (app App) ListenCallbacks(mids ...tele.MiddlewareFunc) {
 	const startWith = "\f"
 
 	app.Bot.Handle(tele.OnCallback, func(c tele.Context) error {
@@ -73,9 +67,5 @@ func (app App) ListenCallbacks() {
 		}
 
 		return nil
-	})
-}
-
-func (app App) RegisterHandler(h Registable) {
-	h.RegisterHandlers(app.Bot)
+	}, mids...)
 }
