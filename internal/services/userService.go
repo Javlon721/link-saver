@@ -16,7 +16,7 @@ func NewUserService(userStore types.UserStore) *UserService {
 	return &UserService{userStore: userStore}
 }
 
-func (service UserService) RegisterUser(ctx context.Context, params *types.RegisterUser) (*types.User, error) {
+func (service *UserService) RegisterUser(ctx context.Context, params *types.RegisterUser) (*types.User, error) {
 	_, err := service.userStore.GetUser(ctx, params.TelegramID)
 
 	if err == nil {
@@ -36,15 +36,15 @@ func (service UserService) RegisterUser(ctx context.Context, params *types.Regis
 	return user, nil
 }
 
-func (service UserService) GetUser(ctx context.Context, telegram_id int64) (*types.User, error) {
+func (service *UserService) GetUser(ctx context.Context, telegram_id int64) (*types.User, error) {
 	return service.userStore.GetUser(ctx, telegram_id)
 }
 
-func (service UserService) DeleteUser(ctx context.Context, userID int64) error {
+func (service *UserService) DeleteUser(ctx context.Context, userID int64) error {
 	return service.userStore.DeleteUser(ctx, userID)
 }
 
-func (service UserService) NewWithTx(db types.DB) *UserService {
+func (service *UserService) NewWithTx(db types.DB) *UserService {
 	userStore := service.userStore.NewWithTx(db)
 
 	return &UserService{

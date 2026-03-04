@@ -13,7 +13,7 @@ type PostgreLinkStore struct {
 	table string
 }
 
-func (store PostgreLinkStore) AddLink(ctx context.Context, userID int64, linkName, describtion string) (*types.Link, error) {
+func (store *PostgreLinkStore) AddLink(ctx context.Context, userID int64, linkName, describtion string) (*types.Link, error) {
 	query := fmt.Sprintf("insert into %s (user_id, link, describtion) values ($1, $2, $3) returning id", store.table)
 
 	var link types.Link
@@ -31,7 +31,7 @@ func (store PostgreLinkStore) AddLink(ctx context.Context, userID int64, linkNam
 	return &link, err
 }
 
-func (store PostgreLinkStore) GetAll(ctx context.Context, user_id int64) []*types.Link {
+func (store *PostgreLinkStore) GetAll(ctx context.Context, user_id int64) []*types.Link {
 	query := fmt.Sprintf("select id, user_id, link, describtion from %s where user_id = $1", store.table)
 
 	var result []*types.Link
@@ -53,7 +53,7 @@ func (store PostgreLinkStore) GetAll(ctx context.Context, user_id int64) []*type
 	return result
 }
 
-func (store PostgreLinkStore) DeleteLink(ctx context.Context, userID, link_id int64) error {
+func (store *PostgreLinkStore) DeleteLink(ctx context.Context, userID, link_id int64) error {
 
 	query := fmt.Sprintf("delete from %s where id = $1 and user_id = $2", store.table)
 
@@ -62,7 +62,7 @@ func (store PostgreLinkStore) DeleteLink(ctx context.Context, userID, link_id in
 	return err
 }
 
-func (store PostgreLinkStore) DeleteUserLinks(ctx context.Context, userID int64) error {
+func (store *PostgreLinkStore) DeleteUserLinks(ctx context.Context, userID int64) error {
 	query := fmt.Sprintf("delete from %s where user_id = $1", store.table)
 
 	_, err := store.db.Exec(ctx, query, userID)
@@ -79,7 +79,7 @@ func NewPostgreLinkStore(db types.DB, table string) *PostgreLinkStore {
 	}
 }
 
-func (p PostgreLinkStore) NewWithTx(db types.DB) types.LinkStore {
+func (p *PostgreLinkStore) NewWithTx(db types.DB) types.LinkStore {
 	store := &PostgreLinkStore{
 		db:    db,
 		table: p.table,

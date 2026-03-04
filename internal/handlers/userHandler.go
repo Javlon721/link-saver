@@ -14,11 +14,6 @@ import (
 	tele "gopkg.in/telebot.v4"
 )
 
-type Mux interface {
-	Handle(endpoint any, h tele.HandlerFunc, m ...tele.MiddlewareFunc)
-	Use(middleware ...tele.MiddlewareFunc)
-}
-
 type UserHandler struct {
 	userService *services.UserService
 	linkService *services.LinkService

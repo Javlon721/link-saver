@@ -32,7 +32,7 @@ func NewLinkHandler(linkService *services.LinkService) *LinkHandler {
 	return &LinkHandler{linkService: linkService}
 }
 
-func (h LinkHandler) RegisterLink(c tele.Context) error {
+func (h *LinkHandler) RegisterLink(c tele.Context) error {
 	senderID := middleware.GetUserID(c)
 
 	ctx := context.Background()
@@ -68,7 +68,7 @@ func (h LinkHandler) RegisterLink(c tele.Context) error {
 	return c.Send(fmt.Sprintf("link registered: %d", link.ID))
 }
 
-func (h LinkHandler) GetAll(c tele.Context) error {
+func (h *LinkHandler) GetAll(c tele.Context) error {
 	senderID := middleware.GetUserID(c)
 
 	ctx := context.Background()
@@ -94,7 +94,7 @@ func (h LinkHandler) GetAll(c tele.Context) error {
 	return c.Send(message.Text, message.ParseMode)
 }
 
-func (h LinkHandler) GetAllWithBtns(c tele.Context) error {
+func (h *LinkHandler) GetAllWithBtns(c tele.Context) error {
 	sender := c.Sender()
 
 	ctx := context.Background()
@@ -132,7 +132,7 @@ func (h LinkHandler) GetAllWithBtns(c tele.Context) error {
 	return nil
 }
 
-func (h LinkHandler) DeleteLink(c tele.Context) error {
+func (h *LinkHandler) DeleteLink(c tele.Context) error {
 	payload := strings.SplitN(c.Callback().Data, "|", 2)
 
 	if len(payload) < 2 {
@@ -164,7 +164,7 @@ func (h LinkHandler) DeleteLink(c tele.Context) error {
 	return c.Delete()
 }
 
-func (h LinkHandler) GetCallbacks() map[string]tele.HandlerFunc {
+func (h *LinkHandler) GetCallbacks() map[string]tele.HandlerFunc {
 	callbacks := map[string]tele.HandlerFunc{}
 
 	callbacks["delete"] = h.DeleteLink

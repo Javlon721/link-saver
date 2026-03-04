@@ -7,7 +7,7 @@ import (
 
 type MainHandler struct{}
 
-func (h MainHandler) HelpDeskHandler(ctx tele.Context) error {
+func (h *MainHandler) HelpDeskHandler(ctx tele.Context) error {
 	message := templates.HelpDesk()
 
 	return ctx.Send(message.Text, message.ParseMode)

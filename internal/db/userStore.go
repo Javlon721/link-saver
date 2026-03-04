@@ -15,7 +15,7 @@ type PostgreUserStore struct {
 	table string
 }
 
-func (p PostgreUserStore) GetUser(ctx context.Context, telegramID int64) (*types.User, error) {
+func (p *PostgreUserStore) GetUser(ctx context.Context, telegramID int64) (*types.User, error) {
 	var user types.User
 
 	query := fmt.Sprintf("select id, telegram_id from %s where telegram_id = $1", p.table)
@@ -30,7 +30,7 @@ func (p PostgreUserStore) GetUser(ctx context.Context, telegramID int64) (*types
 	return &user, nil
 }
 
-func (p PostgreUserStore) AddUser(ctx context.Context, params *types.RegisterUser) (*types.User, error) {
+func (p *PostgreUserStore) AddUser(ctx context.Context, params *types.RegisterUser) (*types.User, error) {
 	query := fmt.Sprintf("insert into %s (telegram_id) values ($1) returning id", p.table)
 
 	newUser := &types.User{
@@ -44,7 +44,7 @@ func (p PostgreUserStore) AddUser(ctx context.Context, params *types.RegisterUse
 	return newUser, nil
 }
 
-func (p PostgreUserStore) DeleteUser(ctx context.Context, userID int64) error {
+func (p *PostgreUserStore) DeleteUser(ctx context.Context, userID int64) error {
 	query := fmt.Sprintf("delete from %s where id = $1", p.table)
 
 	_, err := p.db.Exec(ctx, query, userID)
@@ -61,7 +61,7 @@ func NewPostgresUserStore(db types.DB, table string) *PostgreUserStore {
 	}
 }
 
-func (p PostgreUserStore) NewWithTx(db types.DB) types.UserStore {
+func (p *PostgreUserStore) NewWithTx(db types.DB) types.UserStore {
 	store := &PostgreUserStore{
 		db:    db,
 		table: p.table,
