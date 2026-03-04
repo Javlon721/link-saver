@@ -8,6 +8,7 @@ import (
 	"github.com/Javlon721/link-saver/internal/db"
 	"github.com/Javlon721/link-saver/internal/handlers"
 	linksaver "github.com/Javlon721/link-saver/internal/linkSaver"
+	"github.com/Javlon721/link-saver/internal/middleware"
 	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/joho/godotenv"
 )
@@ -48,10 +49,12 @@ func main() {
 	userStore := db.NewPostgresUserStore(postgreConn, userTable)
 	linkStore := db.NewPostgreLinkStore(postgreConn, linkTable)
 
-	linkService := services.NewLinkService(linkStore, userStore)
+	linkService := services.NewLinkService(linkStore)
 	userService := services.NewUserService(userStore)
 
 	app, err := linksaver.New(config)
+
+	app.Bot.Use(middleware.AuthorizeUser(userService))
 
 	if err != nil {
 		panic(err)

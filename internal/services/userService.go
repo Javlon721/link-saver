@@ -40,14 +40,8 @@ func (service UserService) GetUser(ctx context.Context, telegram_id int64) (*typ
 	return service.userStore.GetUser(ctx, telegram_id)
 }
 
-func (service UserService) DeleteUser(ctx context.Context, telegram_id int64) error {
-	user, err := service.userStore.GetUser(ctx, telegram_id)
-
-	if err != nil {
-		return err
-	}
-
-	return service.userStore.DeleteUser(ctx, user.ID)
+func (service UserService) DeleteUser(ctx context.Context, userID int64) error {
+	return service.userStore.DeleteUser(ctx, userID)
 }
 
 func (service UserService) NewWithTx(db types.DB) *UserService {

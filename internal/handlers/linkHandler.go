@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Javlon721/link-saver/internal/errs"
+	"github.com/Javlon721/link-saver/internal/middleware"
 	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/Javlon721/link-saver/internal/templates"
 	"github.com/Javlon721/link-saver/internal/types"
@@ -32,7 +33,7 @@ func NewLinkHandler(linkService *services.LinkService) *LinkHandler {
 }
 
 func (h LinkHandler) RegisterLink(c tele.Context) error {
-	senderID := c.Sender().ID
+	senderID := middleware.GetUserID(c)
 
 	ctx := context.Background()
 
@@ -68,7 +69,7 @@ func (h LinkHandler) RegisterLink(c tele.Context) error {
 }
 
 func (h LinkHandler) GetAll(c tele.Context) error {
-	senderID := c.Sender().ID
+	senderID := middleware.GetUserID(c)
 
 	ctx := context.Background()
 
@@ -98,7 +99,7 @@ func (h LinkHandler) GetAllWithBtns(c tele.Context) error {
 
 	ctx := context.Background()
 
-	links, err := h.linkService.GetAll(ctx, sender.ID)
+	links, err := h.linkService.GetAll(ctx, middleware.GetUserID(c))
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {
@@ -154,7 +155,7 @@ func (h LinkHandler) DeleteLink(c tele.Context) error {
 		return nil
 	}
 
-	err = h.linkService.DeleteLink(ctx, c.Sender().ID, linkID)
+	err = h.linkService.DeleteLink(ctx, middleware.GetUserID(c), linkID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {

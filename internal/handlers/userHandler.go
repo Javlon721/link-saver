@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/Javlon721/link-saver/internal/errs"
+	"github.com/Javlon721/link-saver/internal/middleware"
 	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/Javlon721/link-saver/internal/types"
 	"github.com/jackc/pgx/v5"
@@ -62,7 +63,7 @@ func (h UserHandler) GetUser(ctx tele.Context) error {
 }
 
 func (h UserHandler) DeleteUser(c tele.Context) error {
-	senderID := c.Sender().ID
+	senderID := middleware.GetUserID(c)
 
 	ctx := context.Background()
 
