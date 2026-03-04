@@ -132,12 +132,6 @@ func (h LinkHandler) GetAllWithBtns(c tele.Context) error {
 	return nil
 }
 
-func (h LinkHandler) RegisterHandlers(mux Mux) {
-	mux.Handle("/link", h.RegisterLink)
-	mux.Handle("/links", h.GetAll)
-	mux.Handle("/linksBtns", h.GetAllWithBtns)
-}
-
 func (h LinkHandler) DeleteLink(c tele.Context) error {
 	payload := strings.SplitN(c.Callback().Data, "|", 2)
 

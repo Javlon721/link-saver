@@ -62,19 +62,25 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService, linkService, postgreConn)
 	linkHandler := handlers.NewLinkHandler(linkService)
 
-	withAuthMiddleWare := app.Bot.Group()
-	withoutAuth := app.Bot.Group()
-
 	authMiddleware := middleware.AuthorizeUser(userService)
 
-	withAuthMiddleWare.Use(authMiddleware)
+	// global use endpoints
+	app.Bot.Handle("/start", mainHandler.HelpDeskHandler)
+	app.Bot.Handle("/help", mainHandler.HelpDeskHandler)
 
-	withoutAuth.Handle("/register", userHandler.RegisterUser)
+	// register new user
+	app.Bot.Handle("/register", userHandler.RegisterUser)
 
-	mainHandler.RegisterHandlers(withoutAuth)
-	userHandler.RegisterHandlers(withAuthMiddleWare)
-	linkHandler.RegisterHandlers(withAuthMiddleWare)
+	// user crud
+	app.Bot.Handle("/me", userHandler.GetUser, authMiddleware)
+	app.Bot.Handle("/stop", userHandler.DeleteUser, authMiddleware)
 
+	// link crud
+	app.Bot.Handle("/link", linkHandler.RegisterLink, authMiddleware)
+	app.Bot.Handle("/links", linkHandler.GetAll, authMiddleware)
+	app.Bot.Handle("/linksBtns", linkHandler.GetAllWithBtns, authMiddleware)
+
+	//link crud callbacks
 	app.RegisterCallbacks(linkHandler.GetCallbacks())
 	app.ListenCallbacks(authMiddleware)
 

@@ -109,8 +109,3 @@ func (h UserHandler) DeleteUser(c tele.Context) error {
 
 	return c.Send("user deleted successfully")
 }
-
-func (h UserHandler) RegisterHandlers(mux Mux) {
-	mux.Handle("/me", h.GetUser)
-	mux.Handle("/stop", h.DeleteUser)
-}
