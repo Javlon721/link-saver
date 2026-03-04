@@ -49,3 +49,11 @@ func (service UserService) DeleteUser(ctx context.Context, userID int64) error {
 
 	return service.userStore.DeleteUser(ctx, user.ID)
 }
+
+func (service UserService) NewWithTx(db types.DB) *UserService {
+	userStore := service.userStore.NewWithTx(db)
+
+	return &UserService{
+		userStore: userStore,
+	}
+}

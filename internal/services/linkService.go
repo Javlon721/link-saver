@@ -57,3 +57,13 @@ func (service LinkService) DeleteLink(ctx context.Context, telegramID, linkID in
 
 	return service.linkStore.DeleteLink(ctx, user.ID, linkID)
 }
+
+func (service LinkService) NewWithTx(db types.DB) *LinkService {
+	userStore := service.userStore.NewWithTx(db)
+	linkStore := service.linkStore.NewWithTx(db)
+
+	return &LinkService{
+		userStore: userStore,
+		linkStore: linkStore,
+	}
+}

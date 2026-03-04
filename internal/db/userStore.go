@@ -11,7 +11,7 @@ import (
 )
 
 type PostgreUserStore struct {
-	db    DB
+	db    types.DB
 	table string
 }
 
@@ -52,11 +52,20 @@ func (p PostgreUserStore) DeleteUser(ctx context.Context, userID int64) error {
 	return err
 }
 
-func NewPostgresUserStore(db DB, table string) *PostgreUserStore {
+func NewPostgresUserStore(db types.DB, table string) *PostgreUserStore {
 	cleanedTable := pgx.Identifier{table}.Sanitize()
 
 	return &PostgreUserStore{
 		db:    db,
 		table: cleanedTable,
 	}
+}
+
+func (p PostgreUserStore) NewWithTx(db types.DB) types.UserStore {
+	store := &PostgreUserStore{
+		db:    db,
+		table: p.table,
+	}
+
+	return store
 }

@@ -15,4 +15,5 @@ type UserStore interface {
 	GetUser(context.Context, int64) (*User, error)
 	AddUser(context.Context, *RegisterUser) (*User, error)
 	DeleteUser(context.Context, int64) error
+	NewWithTx(db DB) UserStore
 }

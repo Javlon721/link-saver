@@ -9,7 +9,7 @@ import (
 )
 
 type PostgreLinkStore struct {
-	db    DB
+	db    types.DB
 	table string
 }
 
@@ -62,11 +62,20 @@ func (store PostgreLinkStore) DeleteLink(ctx context.Context, userID, link_id in
 	return err
 }
 
-func NewPostgreLinkStore(db DB, table string) *PostgreLinkStore {
+func NewPostgreLinkStore(db types.DB, table string) *PostgreLinkStore {
 	cleanedTable := pgx.Identifier{table}.Sanitize()
 
 	return &PostgreLinkStore{
 		db:    db,
 		table: cleanedTable,
 	}
+}
+
+func (p PostgreLinkStore) NewWithTx(db types.DB) types.LinkStore {
+	store := &PostgreLinkStore{
+		db:    db,
+		table: p.table,
+	}
+
+	return store
 }
