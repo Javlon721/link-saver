@@ -10,6 +10,7 @@ import (
 	"github.com/Javlon721/link-saver/internal/middleware"
 	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/Javlon721/link-saver/internal/types"
+	"github.com/jackc/pgx/v5"
 	tele "gopkg.in/telebot.v4"
 )
 
@@ -27,7 +28,7 @@ func NewUserHandler(userService *services.UserService, linkService *services.Lin
 	return &UserHandler{userService: userService, linkService: linkService}
 }
 
-func (h UserHandler) RegisterUser(ctx tele.Context) error {
+func (h *UserHandler) RegisterUser(ctx tele.Context) error {
 	senderID := ctx.Sender().ID
 
 	params := &types.RegisterUser{TelegramID: senderID}
@@ -47,7 +48,7 @@ func (h UserHandler) RegisterUser(ctx tele.Context) error {
 	return nil
 }
 
-func (h UserHandler) GetUser(ctx tele.Context) error {
+func (h *UserHandler) GetUser(ctx tele.Context) error {
 	senderID := ctx.Sender().ID
 
 	user, err := h.userService.GetUser(context.Background(), senderID)
@@ -65,7 +66,7 @@ func (h UserHandler) GetUser(ctx tele.Context) error {
 	return ctx.Send(fmt.Sprintf("your id is: %d", user.TelegramID))
 }
 
-func (h UserHandler) DeleteUser(c tele.Context) error {
+func (h *UserHandler) DeleteUser(c tele.Context) error {
 	senderID := middleware.GetUserID(c)
 
 	ctx, err := middleware.GetContext(c)
@@ -82,10 +83,9 @@ func (h UserHandler) DeleteUser(c tele.Context) error {
 		return c.Send("some error occured")
 	}
 
-	userService := h.userService.NewWithTx(tx)
-	linkService := h.linkService.NewWithTx(tx)
+	h = h.newWithTx(tx)
 
-	err = linkService.DeleteUserLinks(ctx, senderID)
+	err = h.linkService.DeleteUserLinks(ctx, senderID)
 
 	if err != nil {
 		slog.Error("UserHandler.DeleteUser deleting user links", "err", err, "telegram_id", senderID)
@@ -93,7 +93,7 @@ func (h UserHandler) DeleteUser(c tele.Context) error {
 		return c.Send("some error occured")
 	}
 
-	err = userService.DeleteUser(ctx, senderID)
+	err = h.userService.DeleteUser(ctx, senderID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {
@@ -106,4 +106,14 @@ func (h UserHandler) DeleteUser(c tele.Context) error {
 	}
 
 	return c.Send("user deleted successfully")
+}
+
+func (h *UserHandler) newWithTx(tx pgx.Tx) *UserHandler {
+	userService := h.userService.NewWithTx(tx)
+	linkService := h.linkService.NewWithTx(tx)
+
+	return &UserHandler{
+		userService: userService,
+		linkService: linkService,
+	}
 }
