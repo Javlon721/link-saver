@@ -62,6 +62,7 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService, linkService, postgreConn)
 	linkHandler := handlers.NewLinkHandler(linkService)
 
+	//middlewares
 	authMiddleware := middleware.AuthorizeUser(userService)
 
 	// global use endpoints
