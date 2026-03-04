@@ -24,4 +24,4 @@ tasks:
 
   db-connect:
     aliases: [dbc]
-    cmd: psql -U postgres -h localhost -p 5432
+    cmd: psql -U postgres -h localhost -p 5432 -d linksaver

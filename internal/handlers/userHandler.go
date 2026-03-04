@@ -9,15 +9,18 @@ import (
 	"github.com/Javlon721/link-saver/internal/errs"
 	"github.com/Javlon721/link-saver/internal/services"
 	"github.com/Javlon721/link-saver/internal/types"
+	"github.com/jackc/pgx/v5"
 	tele "gopkg.in/telebot.v4"
 )
 
 type UserHandler struct {
 	userService *services.UserService
+	linkService *services.LinkService
+	conn        *pgx.Conn
 }
 
-func NewUserHandler(userService *services.UserService) *UserHandler {
-	return &UserHandler{userService: userService}
+func NewUserHandler(userService *services.UserService, linkService *services.LinkService, conn *pgx.Conn) *UserHandler {
+	return &UserHandler{userService: userService, linkService: linkService, conn: conn}
 }
 
 func (h UserHandler) RegisterUser(ctx tele.Context) error {
@@ -58,22 +61,47 @@ func (h UserHandler) GetUser(ctx tele.Context) error {
 	return ctx.Send(fmt.Sprintf("your id is: %d", user.TelegramID))
 }
 
-func (h UserHandler) DeleteUser(ctx tele.Context) error {
-	senderID := ctx.Sender().ID
+func (h UserHandler) DeleteUser(c tele.Context) error {
+	senderID := c.Sender().ID
 
-	err := h.userService.DeleteUser(context.Background(), senderID)
+	ctx := context.Background()
+
+	tx, err := h.conn.Begin(ctx)
+
+	if err != nil {
+		slog.Error("UserHandler.DeleteUser creating tx", "err", err)
+
+		return c.Send("some error occured")
+	}
+
+	defer tx.Rollback(ctx)
+
+	userService := h.userService.NewWithTx(tx)
+	linkService := h.linkService.NewWithTx(tx)
+
+	err = linkService.DeleteUserLinks(ctx, senderID)
+
+	if err != nil {
+		slog.Error("UserHandler.DeleteUser deleting user links", "err", err, "telegram_id", senderID)
+
+		return c.Send("some error occured")
+	}
+
+	err = userService.DeleteUser(ctx, senderID)
 
 	if err != nil {
 		if errors.Is(err, errs.ErrUserNotFound) {
-			return ctx.Send(err.Error())
+			return c.Send(err.Error())
 		}
 
 		slog.Error("UserHandler.DeleteUser", "err", err)
 
-		return ctx.Send("some error occured")
+		return c.Send("some error occured")
 	}
 
-	return ctx.Send("user deleted successfully")
+	_ = tx.Commit(ctx)
+
+	return c.Send("user deleted successfully")
 }
 
 func (h UserHandler) RegisterHandlers(bot *tele.Bot) {

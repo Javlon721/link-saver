@@ -58,7 +58,7 @@ func main() {
 	}
 
 	mainHandler := handlers.NewMainHandler()
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, linkService, postgreConn)
 	linkHandler := handlers.NewLinkHandler(linkService)
 
 	app.RegisterHandler(mainHandler)

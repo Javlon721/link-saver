@@ -62,6 +62,14 @@ func (store PostgreLinkStore) DeleteLink(ctx context.Context, userID, link_id in
 	return err
 }
 
+func (store PostgreLinkStore) DeleteUserLinks(ctx context.Context, userID int64) error {
+	query := fmt.Sprintf("delete from %s where user_id = $1", store.table)
+
+	_, err := store.db.Exec(ctx, query, userID)
+
+	return err
+}
+
 func NewPostgreLinkStore(db types.DB, table string) *PostgreLinkStore {
 	cleanedTable := pgx.Identifier{table}.Sanitize()
 

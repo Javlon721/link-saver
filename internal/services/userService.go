@@ -36,12 +36,12 @@ func (service UserService) RegisterUser(ctx context.Context, params *types.Regis
 	return user, nil
 }
 
-func (service UserService) GetUser(ctx context.Context, userID int64) (*types.User, error) {
-	return service.userStore.GetUser(ctx, userID)
+func (service UserService) GetUser(ctx context.Context, telegram_id int64) (*types.User, error) {
+	return service.userStore.GetUser(ctx, telegram_id)
 }
 
-func (service UserService) DeleteUser(ctx context.Context, userID int64) error {
-	user, err := service.userStore.GetUser(ctx, userID)
+func (service UserService) DeleteUser(ctx context.Context, telegram_id int64) error {
+	user, err := service.userStore.GetUser(ctx, telegram_id)
 
 	if err != nil {
 		return err
