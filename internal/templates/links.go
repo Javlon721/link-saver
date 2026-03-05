@@ -39,7 +39,7 @@ func LinksTemplate(links []*types.Link) types.Message {
 	fmt.Fprintf(&buf, "<b>Links:</b>\n\n")
 
 	for _, link := range links {
-		fmt.Fprintf(&buf, "%s\n", linkTemplate(link))
+		fmt.Fprintf(&buf, "%s\n\n", linkTemplate(link))
 	}
 
 	return types.Message{
